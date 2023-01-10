@@ -7,16 +7,64 @@ import {
   TouchableWithoutFeedback,
   Image,
   TextInput,
+  Button,
   Keyboard,
 } from "react-native";
+import { Camera } from "expo-camera";
+import * as Location from "expo.location";
+import { Button } from "react-native-web";
 // import { Feather } from "@expo/vector-icons";
 
+const icons = {
+  arrow: require("../../assets/images/arrow-left.png"),
+  camera: require("../../assets/images/camera.png"),
+  map: require("../../assets/images/map.png"),
+  trash: require("../../assets/images/trash.png"),
+};
+
 const CreatePostsScreen = ({ navigation }) => {
-  const [isPhoto, setIsPhoto] = useState(false);
+  const [camera, setCamera] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState(null);
+  const [locationTitle, setLocationTitle] = useState("");
+  const [permission, requestPermission] = Camera.useCameraPermissions();
 
   const keyboardHide = () => {
     Keyboard.dismiss();
   };
+
+  const takePhoto = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Permission to access location was denied :(");
+      return;
+    }
+    const data = await camera.takePictureAsync();
+    setPhoto(data.uri.toString());
+    const place = await Location.getCurrentPositionAsync({});
+    console.log("place --> ", place);
+    setLocation(place);
+  };
+
+  const sendPhoto = () => {
+    navigation.navigate("Posts", { photo, title, locationTitle, location });
+    setPhoto(null);
+    setTitle("");
+    setLocation(null);
+    setLocationTitle("");
+  };
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ alignSelf: "center" }}>
+          Need you permission to use camera
+        </Text>
+        <Button onPress={requestPermission} title="Grant permission" />
+      </View>
+    );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
@@ -27,7 +75,7 @@ const CreatePostsScreen = ({ navigation }) => {
               style={styles.exit}
               onPress={() => navigation.navigate("Posts")}
             >
-              <Image source={require("../../assets/images/arrow-left.png")} />
+              <Image source={icons.arrow} />
             </TouchableOpacity>
             <View>
               <Text style={styles.headerTitle}>Create post</Text>
@@ -39,14 +87,30 @@ const CreatePostsScreen = ({ navigation }) => {
         <View style={styles.postsContainer}>
           <View style={styles.post}>
             <View style={styles.photo}>
-              <View style={styles.photoInput}>
-                <TouchableOpacity style={styles.photoIconWrp}>
-                  <Image
-                    style={styles.photoIcon}
-                    source={require("../../assets/images/camera.png")}
+              {photo ? (
+                <Image
+                  style={styles.takenPhoto}
+                  source={{ uri: photo }}
+                ></Image>
+              ) : (
+                <View style={styles.photoInput}>
+                  <Camera ref={setCamera}>
+                    <TouchableOpacity
+                      style={styles.photoIconWrp}
+                      onPress={takePhoto}
+                    >
+                      <Image style={styles.photoIcon} source={icons.camera} />
+                    </TouchableOpacity>
+                  </Camera>
+                  <Button
+                    onPress={() => {
+                      setPhoto(null);
+                    }}
+                    title="New photo"
                   />
-                </TouchableOpacity>
-              </View>
+                </View>
+              )}
+
               <View style={styles.photoTextWrapper}>
                 <Text style={styles.photoText}>Download photo</Text>
               </View>
@@ -56,39 +120,42 @@ const CreatePostsScreen = ({ navigation }) => {
                 style={styles.input}
                 placeholder="Title..."
                 placeholderTextColor="#BDBDBD"
+                value={title}
+                onChangeText={(value) => setTitle(value)}
               />
             </View>
             <View style={styles.inputWrapper}>
-              <Image
-                source={require("../../assets/images/map.png")}
-                style={styles.inputIcon}
-              />
+              <Image source={icons.map} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Location..."
                 placeholderTextColor="#BDBDBD"
+                value={locationTitle}
+                onChangeText={(value) => setLocationTitle(value)}
               />
             </View>
+
             <TouchableOpacity
               activeOpacity={0.8}
               style={{
                 ...styles.btn,
-                backgroundColor: isPhoto ? "#FF6C00" : "#F6F6F6",
+                backgroundColor: photo ? "#FF6C00" : "#F6F6F6",
               }}
-              disabled={!isPhoto}
+              disabled={!photo}
+              onPress={sendPhoto}
             >
               <Text
                 style={{
                   ...styles.btnTitle,
-                  color: isPhoto ? "#FFFFFF" : "#BDBDBD",
+                  color: photo ? "#FFFFFF" : "#BDBDBD",
                 }}
               >
-                Post
+                Create post
               </Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.delete} disabled={!isPhoto}>
-            <Image source={require("../../assets/images/trash.png")} />
+          <TouchableOpacity style={styles.delete} disabled={!photo}>
+            <Image source={icons.trash} />
           </TouchableOpacity>
         </View>
       </View>
@@ -140,6 +207,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F6F6",
     borderWidth: 1,
     borderColor: "#E8E8E8",
+  },
+  takenPhoto: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   photoIconWrp: {
     position: "absolute",

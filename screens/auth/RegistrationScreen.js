@@ -60,7 +60,7 @@ export default function RegistrationScreen({ navigation }) {
           source={require("../../assets/images/mountains.jpg")}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : null}
+            behavior={Platform.OS == "ios" ? "padding" : ""}
           >
             <View
               style={{
