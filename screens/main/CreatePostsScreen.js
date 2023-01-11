@@ -7,13 +7,10 @@ import {
   TouchableWithoutFeedback,
   Image,
   TextInput,
-  Button,
   Keyboard,
 } from "react-native";
 import { Camera } from "expo-camera";
-import * as Location from "expo.location";
-import { Button } from "react-native-web";
-// import { Feather } from "@expo/vector-icons";
+import * as Location from "expo-location";
 
 const icons = {
   arrow: require("../../assets/images/arrow-left.png"),
@@ -43,11 +40,10 @@ const CreatePostsScreen = ({ navigation }) => {
     const data = await camera.takePictureAsync();
     setPhoto(data.uri.toString());
     const place = await Location.getCurrentPositionAsync({});
-    console.log("place --> ", place);
     setLocation(place);
   };
 
-  const sendPhoto = () => {
+  const sendPhoto = async () => {
     navigation.navigate("Posts", { photo, title, locationTitle, location });
     setPhoto(null);
     setTitle("");
@@ -55,13 +51,24 @@ const CreatePostsScreen = ({ navigation }) => {
     setLocationTitle("");
   };
 
-  if (!permission.granted) {
+  if (!permission?.granted) {
     return (
-      <View style={styles.container}>
-        <Text style={{ alignSelf: "center" }}>
+      <View style={styles.containerPermission}>
+        <Text style={styles.permissionText}>
           Need you permission to use camera
         </Text>
-        <Button onPress={requestPermission} title="Grant permission" />
+        <TouchableOpacity
+          style={styles.permissionBtn}
+          onPress={requestPermission}
+        >
+          <Text style={styles.permissionBtnText}>Grant permission</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.permissionBtn}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <Text style={styles.permissionBtnText}>Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -88,36 +95,42 @@ const CreatePostsScreen = ({ navigation }) => {
           <View style={styles.post}>
             <View style={styles.photo}>
               {photo ? (
-                <Image
-                  style={styles.takenPhoto}
-                  source={{ uri: photo }}
-                ></Image>
-              ) : (
-                <View style={styles.photoInput}>
-                  <Camera ref={setCamera}>
-                    <TouchableOpacity
-                      style={styles.photoIconWrp}
-                      onPress={takePhoto}
-                    >
-                      <Image style={styles.photoIcon} source={icons.camera} />
-                    </TouchableOpacity>
-                  </Camera>
-                  <Button
+                <>
+                  <Image
+                    style={styles.takenPhoto}
+                    source={{ uri: photo }}
+                  ></Image>
+                  <TouchableOpacity
+                    style={styles.photoTextWrapper}
                     onPress={() => {
                       setPhoto(null);
                     }}
-                    title="New photo"
-                  />
-                </View>
+                  >
+                    <Text style={styles.photoText}>Edit photo</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <View style={styles.photoInput}>
+                    <Camera style={styles.camera} ref={setCamera}>
+                      <TouchableOpacity
+                        style={styles.photoIconWrp}
+                        onPress={takePhoto}
+                      >
+                        <Image style={styles.photoIcon} source={icons.camera} />
+                      </TouchableOpacity>
+                    </Camera>
+                  </View>
+                  <TouchableOpacity style={styles.photoTextWrapper}>
+                    <Text style={styles.photoText}>Download photo</Text>
+                  </TouchableOpacity>
+                </>
               )}
-
-              <View style={styles.photoTextWrapper}>
-                <Text style={styles.photoText}>Download photo</Text>
-              </View>
             </View>
+
             <View style={styles.inputWrapper}>
               <TextInput
-                style={styles.input}
+                style={{ ...styles.input, fontWeight: "500" }}
                 placeholder="Title..."
                 placeholderTextColor="#BDBDBD"
                 value={title}
@@ -168,6 +181,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  containerPermission: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  permissionText: {
+    fontSize: 18,
+  },
+  permissionBtn: {
+    width: 200,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+    borderRadius: 100,
+    backgroundColor: "#FF6C00",
+  },
+  permissionBtnText: {
+    fontSize: 16,
+    color: "#FFFFFF",
+  },
   header: {
     height: 88,
     width: "100%",
@@ -193,7 +227,8 @@ const styles = StyleSheet.create({
   postsContainer: {
     flex: 1,
     justifyContent: "space-between",
-    paddingVertical: 32,
+    paddingTop: 32,
+    paddingBottom: 8,
     paddingHorizontal: 16,
   },
   post: {},
@@ -201,17 +236,21 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   photoInput: {
-    position: "relative",
-    height: 267,
-    borderRadius: 8,
-    backgroundColor: "#F6F6F6",
+    height: 240,
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: "#E8E8E8",
+    backgroundColor: "#F6F6F6",
   },
   takenPhoto: {
     width: "100%",
-    height: "100%",
+    height: 240,
     resizeMode: "cover",
+  },
+  camera: {
+    position: "relative",
+    height: 268,
+    borderRadius: 8,
   },
   photoIconWrp: {
     position: "absolute",
@@ -271,6 +310,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 40,
     alignSelf: "center",
+    marginTop: "auto",
     borderRadius: 20,
     backgroundColor: "#F6F6F6",
   },

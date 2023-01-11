@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
     resizeMode: "stretch",
   },
   wrapper: {
-    // position: "relative",
     marginTop: 147,
     height: "100%",
     paddingHorizontal: 16,
@@ -172,7 +171,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   postImgWrapper: {
-    width: "100%",
     height: 240,
     borderRadius: 8,
   },
