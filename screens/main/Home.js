@@ -1,21 +1,32 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { createStackNavigator } from "@react-navigation/stack";
 
-const HomeScreen = () => {
+import PostsScreen from "./PostsScreen";
+import CommentsScreen from "./CommentsScreen";
+import MapScreen from "./MapScreen";
+
+const HomeStack = createStackNavigator();
+
+const Home = () => {
   return (
-    <View style={styles.container}>
-      <Text>HomeScreen</Text>
-    </View>
+    <HomeStack.Navigator>
+      <HomeStack.Screen
+        options={{ headerShown: false }}
+        name="Posts"
+        component={PostsScreen}
+      />
+      <HomeStack.Screen
+        // options={{ headerShown: false }}
+        name="Comments"
+        component={CommentsScreen}
+      />
+      <HomeStack.Screen
+        // options={{ headerShown: false }}
+        name="Map"
+        component={MapScreen}
+      />
+    </HomeStack.Navigator>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
-});
-
-export default HomeScreen;
+export default Home;
