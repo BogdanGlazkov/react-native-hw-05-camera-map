@@ -1,10 +1,23 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 
-const MapScreen = () => {
+const MapScreen = ({ route }) => {
+  const { latitude, longitude, title } = route.params;
+
   return (
     <View style={styles.container}>
-      <Text>MapScreen</Text>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude,
+          longitude,
+          latitudeDelta: 0.001,
+          longitudeDelta: 0.006,
+        }}
+      >
+        <Marker coordinate={{ latitude, longitude }} title={title} />
+      </MapView>
     </View>
   );
 };
@@ -12,9 +25,9 @@ const MapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
+  },
+  map: {
+    flex: 1,
   },
 });
 
